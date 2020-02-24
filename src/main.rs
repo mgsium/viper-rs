@@ -1,9 +1,13 @@
 extern crate clap;
+extern crate indicatif; // Progress Bar Crate
+
 use clap::{Arg, App, SubCommand};
 
+/*
 use std::fs;
 use std::error::Error;
 use std::path;
+*/
 
 // mod lib;
 // use lib::viper_utils;
@@ -53,30 +57,21 @@ fn main() {
                     )
                     .get_matches();
 
+
     // Parsing the project name
-    let ProjectName = matches.subcommand_matches("new").unwrap().value_of("name").unwrap();
-    let PathName = format!("./{}", ProjectName);
-    println!("Creating Project... {:?}", ProjectName);
+    let project_name = matches.subcommand_matches("new").unwrap().value_of("name").unwrap();
+    let path_name = format!("./{}", project_name);
+    println!("Creating Project... {:?}", project_name);
 
-    // Creating the Project Directing
-    fs::create_dir_all(&PathName);
-
-    // Creating the main.py file, error checking
-    let mut filePath = format!("{}/main.py", PathName);
-    let path = path::Path::new(&filePath);
-    let display = path.display();
-
-    let mut file = match fs::File::create(&path) {
-        Err(why) => panic!("Couldn't create {}: {}", display, why.description()),
-        Ok(file) => file,
-    };
+    // Creating Project Directory & main.py;
+    viper_utils::fh::create_boilerplate_files(&path_name);
 
     // Parsing Module Arguments
     let mut modules = Vec::new();
 
     if let Some(matches) = matches.subcommand_matches("new") {
         if matches.is_present("module") {
-            println!("External Modules Specified: ");
+            println!("\nExternal Modules Specified: ");
             for m in matches.values_of("module").unwrap() {
                     println!("{:?}", m);
                     modules.push(m);
