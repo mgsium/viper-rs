@@ -2,15 +2,14 @@ extern crate clap;
 extern crate indicatif; // Progress Bar Crate
 
 use clap::{Arg, App, SubCommand};
+use indicatif::ProgressBar;
+use std::process::Command;
 
 /*
 use std::fs;
 use std::error::Error;
 use std::path;
 */
-
-// mod lib;
-// use lib::viper_utils;
 
 fn main() {
     // Defining command, subcommands and options
@@ -57,6 +56,8 @@ fn main() {
                     )
                     .get_matches();
 
+    // Initializing the Progress Bar
+    let bar = ProgressBar::new(100);
 
     // Parsing the project name
     let project_name = matches.subcommand_matches("new").unwrap().value_of("name").unwrap();
