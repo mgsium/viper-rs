@@ -3,7 +3,6 @@ extern crate indicatif; // Progress Bar Crate
 
 use clap::{Arg, App, SubCommand};
 use indicatif::ProgressBar;
-use std::process::Command;
 
 /*
 use std::fs;
@@ -82,5 +81,6 @@ fn main() {
 
     // Extension
     viper_utils::fh::set_requirements(modules);
+    viper_utils::cli::check_pip_version();
 
 }
