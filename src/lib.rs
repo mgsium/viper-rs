@@ -106,6 +106,13 @@ pub mod cli {
                             .interact()
                             .unwrap();
 
+            match selection {
+                1 => update_pip_version(),
+                2 => println!("\n. . .Installing custom pip version"),
+                _ => println!("\n. . .Using default pip version")
+
+            }
+
             // println!("{}", selection);
         } else {
             // println!("{:?}", status);
@@ -113,6 +120,17 @@ pub mod cli {
         }
     }
 
+    fn update_pip_version() {
+        println!("\n. . .Updating pip version");
+
+        Command::new("python")
+                .args(&["-m","pip","install","--upgrade","pip"])
+                .output()
+                .expect("Could not update pip.");
+
+        Command::new("pip").arg("-V").status().expect("\nError: Failed to Execute pip command.\n");
+        println!("\n. . .Latest pip version installed");
+    }
     // ----------------------------------------------------------------------------------------
 }
 // ============================================================================================
