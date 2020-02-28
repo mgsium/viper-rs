@@ -15,6 +15,8 @@ pub mod fh {
     use std::error::Error;
     use std::path;
     use regex::Regex;
+
+    use std::process::Command;
     // ----------------------------------------------------------------------------------------
 
     // Public Functions
@@ -43,6 +45,7 @@ pub mod fh {
         for m in modules.iter() {
             if check_module_format(m) {
                 println!("{} :  OK", m);
+                install_module(m);
             } else {
                 println!("{} : Issue Encountered", m);
                 return false;
@@ -68,6 +71,13 @@ pub mod fh {
 
         return RE.is_match(m);
     }
+
+    fn install_module(m: &str) {
+        Command::new("pip")
+                .args(&["install", &m])
+                .output()
+                .expect("Could not install module.");
+    }
     // ----------------------------------------------------------------------------------------
 }
 // ============================================================================================
@@ -78,8 +88,11 @@ pub mod fh {
 pub mod cli {
     // Crate Directives
     // ----------------------------------------------------------------------------------------
+    use std::io;
+    use std::io::*;
     use std::process::Command;
     use dialoguer::{theme::ColorfulTheme, Select};
+    use regex::Regex;
     // ----------------------------------------------------------------------------------------
 
     // ----------------------------------------------------------------------------------------
@@ -108,7 +121,7 @@ pub mod cli {
 
             match selection {
                 1 => update_pip_version(),
-                2 => println!("\n. . .Installing custom pip version"),
+                2 => install_custom_pip_version(),
                 _ => println!("\n. . .Using default pip version")
 
             }
@@ -130,6 +143,23 @@ pub mod cli {
 
         Command::new("pip").arg("-V").status().expect("\nError: Failed to Execute pip command.\n");
         println!("\n. . .Latest pip version installed");
+    }
+
+    fn install_custom_pip_version() {
+        let mut valid = false;
+        let mut version = String::new();
+        let ref RE: Regex = Regex::new(r"\b(?:(?:.\d+){0,2}|\w)").unwrap();
+
+        while !valid {
+            print!("Enter preferred version number: ");
+            let _ = io::stdout().flush();
+            io::stdin().read_line(&mut version).expect("\nError: unable to read input.");
+            if RE.is_match(&version) {
+                valid = true;
+            }
+        }
+
+        println!("\n. . .Installing pip version {}", version);
     }
     // ----------------------------------------------------------------------------------------
 }

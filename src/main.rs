@@ -56,7 +56,7 @@ fn main() {
                     .get_matches();
 
     // Initializing the Progress Bar
-    let bar = ProgressBar::new(100);
+    let _bar = ProgressBar::new(100);
 
     // Parsing the project name
     let project_name = matches.subcommand_matches("new").unwrap().value_of("name").unwrap();
