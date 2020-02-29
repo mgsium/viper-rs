@@ -22,8 +22,23 @@ pub mod fh {
     // Public Functions
     // ----------------------------------------------------------------------------------------
     pub fn create_boilerplate_files(path_name: &str) {
+        // Installing virtualenv
+        Command::new("pip")
+                .args(&["install", "virtualenv"])
+                .output()
+                .expect("Could not install virtualenv.");
+        
+        println!("\n. . .Building Project Directory.");
+
         // Creating the Project Directory
-        fs::create_dir_all(&path_name).expect("!Error: Could not create Project Directory.");
+        Command::new("virtualenv")
+                .arg(&path_name)
+                .output()
+                .expect("Could not create virtual environment.");
+            
+        println!("\n. . .Done");
+
+        // fs::create_dir_all(&path_name).expect("!Error: Could not create Project Directory.");
 
         // Creating the main.py file, error checking
         let file_path = format!("{}/main.py", path_name);
@@ -160,6 +175,18 @@ pub mod cli {
         }
 
         println!("\n. . .Installing pip version {}", version);
+
+        Command::new("pip")
+                .args(&["uninstall", "pip"])
+                .output()
+                .expect("\nCould not uninstall pip");
+
+        Command::new("python")
+                .args(&["-m", "pip", "install", "--upgrade", &format!("pip=={}", version)])
+                .output()
+                .expect(&format!("\nCould not install pip version {}", version));
+            
+        Command::new("pip").arg("-V").status().expect("\nError: Failed to Execute pip command.\n");
     }
     // ----------------------------------------------------------------------------------------
 }
