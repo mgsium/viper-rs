@@ -65,6 +65,8 @@ fn main() {
 
     // Creating Project Directory & main.py;
     viper_utils::fh::create_boilerplate_files(&path_name);
+    // Creating requirements.txt
+    let requirements_file = viper_utils::fh::create_requirements_file(&path_name);
 
     // Parsing Module Arguments
     let mut modules = Vec::new();
@@ -77,10 +79,17 @@ fn main() {
                     modules.push(m);
             }
         }
+
+        if matches.is_present("freeze") {
+            viper_utils::fh::freeze(2, &requirements_file);
+        } else if matches.is_present("freeze3") {
+            viper_utils::fh::freeze(3, &requirements_file);
+        }
     }
 
+
     // Extension
-    viper_utils::fh::set_requirements(modules);
+    viper_utils::fh::set_requirements(modules, &requirements_file);
     viper_utils::cli::check_pip_version();
 
 }

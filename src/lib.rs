@@ -36,10 +36,10 @@ pub mod fh {
                 .output()
                 .expect("Could not create virtual environment.");
             
-        println!("\n. . .Done");
+        println!("\n. . .Done!");
 
         // fs::create_dir_all(&path_name).expect("!Error: Could not create Project Directory.");
-
+        
         // Creating the main.py file, error checking
         let file_path = format!("{}/main.py", path_name);
         let path = path::Path::new(&file_path);
@@ -53,14 +53,29 @@ pub mod fh {
         file.write(b"print('Hello, World!')").expect("!Error: Unable for write to file main.py");
     }
 
-    pub fn set_requirements(modules: Vec<&str>) -> bool {
-        println!("\nCreating Requirements File... ");
+    pub fn create_requirements_file(path_name: &str) -> fs::File {
+        // Creating the main.py file, error checking
+        let file_path = format!("{}/requirements.txt", path_name);
+        let path = path::Path::new(&file_path);
+        let display = path.display();
+
+        let mut file = match fs::File::create(&path) {
+            Err(why) => panic!("Couldn't create {}: {}", display, why.description()),
+            Ok(file) => file,
+        };
+
+        return file;
+    }
+
+    pub fn set_requirements(modules: Vec<&str>, mut file: &fs::File) -> bool {
+        println!("\nAdding modules... ");
 
         // Checking module format
         for m in modules.iter() {
             if check_module_format(m) {
                 println!("{} :  OK", m);
-                install_module(m);
+                let output = str::replace(m, "@", "==");
+                file.write(format!("{}\n", output).as_bytes()).expect("!Error: Could not write module to file.");
             } else {
                 println!("{} : Issue Encountered", m);
                 return false;
@@ -68,6 +83,29 @@ pub mod fh {
         }
 
         return true;
+    }
+
+    pub fn freeze(pip_v: u32, mut file: &fs::File) {
+        let mut command = String::new();
+
+        if pip_v == 3 {
+            println!("\n. . .freezing installed modules with pip3");
+            command = String::from("pip3");
+        } else if pip_v == 2 {
+            println!("\n. . .freezing installed modules with pip");
+            command = String::from("pip");
+        } else {
+            println!("Error");
+        }
+        
+        // println!("{}", format!("{}/requirements.txt", project_path));
+
+        let output = Command::new(&command)
+                .args(&["freeze"])
+                .output()
+                .expect("\n!Error: Could not create requirements.txt");
+
+        file.write(&output.stdout).expect("\n!Error: Could not write to requirements.txt");
     }
     // ----------------------------------------------------------------------------------------
 
@@ -87,12 +125,6 @@ pub mod fh {
         return RE.is_match(m);
     }
 
-    fn install_module(m: &str) {
-        Command::new("pip")
-                .args(&["install", &m])
-                .output()
-                .expect("Could not install module.");
-    }
     // ----------------------------------------------------------------------------------------
 }
 // ============================================================================================
