@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 extern crate clap;
 extern crate indicatif; // Progress Bar Crate
 
@@ -15,10 +17,10 @@ fn main() {
     let matches = App::new("viper")
                     .version("0.1")
                     .author("Musab G. <musabgumaa@gmail.com>")
-                    .arg(Arg::with_name("env")
+                    /*.arg(Arg::with_name("env")
                         .short("e")
                         .long("env")
-                        .help("Creates a venv for the project."))
+                        .help("Creates a venv for the project."))*/
                     .arg(Arg::with_name("dependencies")
                         .short("D")
                         .long("dependencies")
@@ -65,6 +67,10 @@ fn main() {
 
     // Creating Project Directory & main.py;
     viper_utils::fh::create_boilerplate_files(&path_name);
+    
+    // Checking pip version
+    viper_utils::cli::check_pip_version();
+
     // Creating requirements.txt
     let requirements_file = viper_utils::fh::create_requirements_file(&path_name);
 
@@ -87,9 +93,7 @@ fn main() {
         }
     }
 
-
     // Extension
     viper_utils::fh::set_requirements(modules, &requirements_file);
-    viper_utils::cli::check_pip_version();
 
 }

@@ -1,6 +1,7 @@
 #[macro_use] extern crate lazy_static;
 extern crate regex;
 extern crate dialoguer;
+extern crate requests;
 
 // use regex::Regex;
 
@@ -11,7 +12,7 @@ pub mod fh {
     // Crate Directives
     // ----------------------------------------------------------------------------------------
     use std::fs;
-    use std::io::Write;
+    use std::io::{Read, Write};
     use std::error::Error;
     use std::path;
     use regex::Regex;
@@ -50,7 +51,13 @@ pub mod fh {
             Ok(file) => file,
         };
 
-        file.write(b"print('Hello, World!')").expect("!Error: Unable for write to file main.py");
+        file.write(b"
+def main():
+    print('Hello, World!')
+
+if __name__ == \"__main__\":
+    main()
+        ").expect("!Error: Unable for write to file main.py");
     }
 
     pub fn create_requirements_file(path_name: &str) -> fs::File {
@@ -59,7 +66,7 @@ pub mod fh {
         let path = path::Path::new(&file_path);
         let display = path.display();
 
-        let mut file = match fs::File::create(&path) {
+        let file = match fs::File::create(&path) {
             Err(why) => panic!("Couldn't create {}: {}", display, why.description()),
             Ok(file) => file,
         };
@@ -70,12 +77,16 @@ pub mod fh {
     pub fn set_requirements(modules: Vec<&str>, mut file: &fs::File) -> bool {
         println!("\nAdding modules... ");
 
+        if modules.len() > 0 {
+            install_yolk3k();
+        }
+
         // Checking module format
         for m in modules.iter() {
-            if check_module_format(m) {
+            let (is_valid, version_num) = check_module_format(m);
+            if is_valid {
                 println!("{} :  OK", m);
-                let output = str::replace(m, "@", "==");
-                file.write(format!("{}\n", output).as_bytes()).expect("!Error: Could not write module to file.");
+                file.write(format!("{}\n", str::replace(&version_num, " ", "==")).as_bytes()).expect("!Error: Could not write module to file.");
             } else {
                 println!("{} : Issue Encountered", m);
                 return false;
@@ -111,20 +122,55 @@ pub mod fh {
 
     // Private Functions
     // ----------------------------------------------------------------------------------------
-    fn check_module_format(m: &str) -> bool {
+    fn check_module_format(m: &str) -> (bool, String) {
         lazy_static! {
             static ref RE: Regex = Regex::new(r"\b(?:[a-z]{1,})(?:@\d|[^@.])(?:(?:.\d+){0,2}|\w)").unwrap();
         }
 
-        /*
-        for capture in RE.captures(m) {
-            println!("{:?}", capture);
-        }
-        */
+        let mut has_version_num: bool = true;
+        let mut ver;
 
-        return RE.is_match(m);
+        let output = Command::new("yolk")
+            .args(&["-V", &m])
+            .output()
+            .expect("\n!Error: Could not run command.");
+        
+        if !m.contains("@") {
+            ver = String::from_utf8_lossy(&output.stdout);
+            if ver.len() > 0 {
+                println!("{:?}", ver);
+            } else {
+                // println!("Invalid Package")
+                has_version_num = false;
+            }
+        } else {
+            ver = String::from_utf8_lossy(b"");
+        }
+
+        return (RE.is_match(m) && has_version_num, ver.to_string());
     }
 
+    /*
+    fn get_latest_module_version(m: &str) {
+        let url = format!("https://pypi.python.org/pypi/{}/json", m);
+
+        let response = requests::get(&url).unwrap();
+        let data = response.json().unwrap();
+
+        println!("{:?}", data);
+    }
+    */
+
+    fn install_yolk3k() {
+        println!("\n...Installing yolk3k");
+
+        let status = Command::new("pip").args(&["install", "yolk3k"]).status().expect("\nError: Failed to Execute pip command.\n");
+            if status.success(){
+                println!("Successful\n");
+            } else {
+                println!("Error: could not install yolk3k.");
+            }   
+    }
     // ----------------------------------------------------------------------------------------
 }
 // ============================================================================================
