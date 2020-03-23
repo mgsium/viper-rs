@@ -3,6 +3,11 @@ name = "viper"
 version = "0.1.0"
 authors = ["Musab Guma'a <musabgumaa@gmail.com>"]
 edition = "2018"
+description = "A rust package to simplify python project creation"
+repository = "https://gitlab.com/mgsium/viper"
+keywords = ["python", "setup"]
+readme = "README.md"
+
 
 [lib]
 name="viper_utils"
