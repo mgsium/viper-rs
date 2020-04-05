@@ -22,20 +22,24 @@ pub mod fh {
 
     // Public Functions
     // ----------------------------------------------------------------------------------------
-    pub fn create_boilerplate_files(path_name: &str) {
-        // Installing virtualenv
-        Command::new("pip")
-                .args(&["install", "virtualenv"])
-                .output()
-                .expect("Could not install virtualenv.");
-        
-        println!("\n. . .Building Project Directory.");
+    pub fn create_boilerplate_files(path_name: &str, venv: bool) {
+        if venv {
+            // Installing virtualenv
+            Command::new("pip")
+                    .args(&["install", "virtualenv"])
+                    .output()
+                    .expect("Could not install virtualenv.");
+            
+            println!("\n. . .Building Project Directory.");
 
-        // Creating the Project Directory
-        Command::new("virtualenv")
-                .arg(&path_name)
-                .output()
-                .expect("Could not create virtual environment.");
+            // Creating the Project Directory
+            Command::new("virtualenv")
+                    .arg(&path_name)
+                    .output()
+                    .expect("Could not create virtual environment.");
+        } else {
+            fs::create_dir(path_name).expect(&format!("!Error: Could not create project directory at {}", path_name));
+        }
             
         println!("\n. . .Done!");
 

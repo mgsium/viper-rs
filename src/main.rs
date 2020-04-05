@@ -17,10 +17,6 @@ fn main() {
     let matches = App::new("viper")
                     .version("0.1")
                     .author("Musab G. <musabgumaa@gmail.com>")
-                    /*.arg(Arg::with_name("env")
-                        .short("e")
-                        .long("env")
-                        .help("Creates a venv for the project."))*/
                     .arg(Arg::with_name("dependencies")
                         .short("D")
                         .long("dependencies")
@@ -35,6 +31,10 @@ fn main() {
                             .help("Specify the name for the project")
                             .required(true)
                             .index(1))
+                        .arg(Arg::with_name("env")
+                            .short("e")
+                            .long("env")
+                            .help("Creates a venv for the project."))
                         .arg(Arg::with_name("module")
                             .short("m")
                             .long("module")
@@ -66,7 +66,13 @@ fn main() {
     println!("Creating Project... {:?}", project_name);
 
     // Creating Project Directory & main.py;
-    viper_utils::fh::create_boilerplate_files(&path_name);
+    let mut venv: bool = false;
+    if let Some(matches) = matches.subcommand_matches("new") {
+        if matches.is_present("env") {
+            venv = true;
+        }
+    }
+    viper_utils::fh::create_boilerplate_files(&path_name, venv);
     
     // Checking pip version
     viper_utils::cli::check_pip_version();
