@@ -122,6 +122,15 @@ fn main() {
             // Extension
             viper_utils::fh::set_requirements(modules, &requirements_file);
         }
+    } else {
+        if let Some(matches) = matches.subcommand_matches("new") {
+            if matches.is_present("module")
+              || matches.is_present("freeze")
+              || matches.is_present("freeze3")
+              || matches.is_present("importd"){
+                println!("\n!Cannot add dependencies: venv not specified")
+            }
+        }
     }
 
     viper_utils::cli::install_git(&path_name);

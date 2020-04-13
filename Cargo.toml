@@ -1,6 +1,6 @@
 [package]
 name = "viper"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Musab Guma'a <musabgumaa@gmail.com>"]
 edition = "2018"
 description = "A rust package to simplify python project creation"
