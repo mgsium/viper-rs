@@ -29,7 +29,7 @@ pub mod fh {
                     .args(&["install", "virtualenv"])
                     .output()
                     .expect("Could not install virtualenv.");
-            
+
             println!("\n. . .Building Project Directory.");
 
             // Creating the Project Directory
@@ -38,13 +38,13 @@ pub mod fh {
                     .output()
                     .expect("Could not create virtual environment.");
         } else {
-            fs::create_dir(path_name).expect(&format!("!Error: Could not create project directory at {}", path_name));
+            fs::create_dir_all(path_name).expect(&format!("!Error: Could not create project directory at {}", path_name));
         }
-            
+
         println!("\n. . .Done!");
 
         // fs::create_dir_all(&path_name).expect("!Error: Could not create Project Directory.");
-        
+
         // Creating the main.py file, error checking
         let file_path = format!("{}/main.py", path_name);
         let path = path::Path::new(&file_path);
@@ -80,6 +80,7 @@ if __name__ == \"__main__\":
 
     pub fn set_requirements(modules: Vec<&str>, mut file: &fs::File) -> bool {
         println!("\nAdding modules... ");
+        println!("{:?}", modules);
 
         if modules.len() > 0 {
             install_yolk3k();
@@ -112,7 +113,7 @@ if __name__ == \"__main__\":
         } else {
             println!("Error");
         }
-        
+
         // println!("{}", format!("{}/requirements.txt", project_path));
 
         let output = Command::new(&command)
@@ -122,6 +123,14 @@ if __name__ == \"__main__\":
 
         file.write(&output.stdout).expect("\n!Error: Could not write to requirements.txt");
     }
+
+    /*
+    pub fn import_dependencies_from_file(filename: &str) -> Vec<String> {
+
+
+        return modules;
+    }
+    */
     // ----------------------------------------------------------------------------------------
 
     // Private Functions
@@ -138,7 +147,7 @@ if __name__ == \"__main__\":
             .args(&["-V", &m])
             .output()
             .expect("\n!Error: Could not run command.");
-        
+
         if !m.contains("@") {
             ver = String::from_utf8_lossy(&output.stdout);
             if ver.len() > 0 {
@@ -173,7 +182,7 @@ if __name__ == \"__main__\":
                 println!("Successful\n");
             } else {
                 println!("Error: could not install yolk3k.");
-            }   
+            }
     }
     // ----------------------------------------------------------------------------------------
 }
@@ -230,6 +239,45 @@ pub mod cli {
         }
     }
 
+    pub fn install_git(project_path: &str) {
+        println!("\nInitialize with git?");
+
+        let options = &[
+            "Yes",
+            "No"
+        ];
+
+        let selection = Select::with_theme(&ColorfulTheme::default())
+                        .with_prompt("Pick an Option:")
+                        .default(0)
+                        .items(&options[..])
+                        .interact()
+                        .unwrap();
+
+        let mut choice: bool = false;
+        match selection {
+            0 => choice = true,
+            _ => choice = false
+        }
+
+        if choice {
+            println!("\n...Cheking pip version.");
+            let r = check_git_installed();
+            // println!("{:?}", r);
+            if r {
+                println!("...Initializing");
+                git_init(project_path);
+                println!("...Done!");
+            } else {
+                println!("\n...Git is not installed.\n");
+            }
+        }
+    }
+    // ----------------------------------------------------------------------------------------
+
+    // ----------------------------------------------------------------------------------------
+    // Private Functions
+    // ----------------------------------------------------------------------------------------
     fn update_pip_version() {
         println!("\n. . .Updating pip version");
 
@@ -267,8 +315,21 @@ pub mod cli {
                 .args(&["-m", "pip", "install", "--upgrade", &format!("pip=={}", version)])
                 .output()
                 .expect(&format!("\nCould not install pip version {}", version));
-            
+
         Command::new("pip").arg("-V").status().expect("\nError: Failed to Execute pip command.\n");
+    }
+
+    fn check_git_installed() -> bool {
+        Command::new("git").arg("--version").output().expect("").status.success()
+    }
+
+    fn git_init(path: &str) {
+        println!("\n...Initializing Directory");
+
+        Command::new("git")
+            .args(&["init", &path])
+            .output()
+            .expect("\nError: Could not Initialize with Git.\n");
     }
     // ----------------------------------------------------------------------------------------
 }

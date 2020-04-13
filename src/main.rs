@@ -3,8 +3,14 @@
 extern crate clap;
 extern crate indicatif; // Progress Bar Crate
 
+// Crate Directives
+// ----------------------------------------------------------------------------------------
 use clap::{Arg, App, SubCommand};
 use indicatif::ProgressBar;
+use std::io::{Read, Write, BufRead, BufReader};
+use std::fs;
+// ----------------------------------------------------------------------------------------
+
 
 /*
 use std::fs;
@@ -54,6 +60,12 @@ fn main() {
                             .help("Specify installed modules (provided by 'pip3 freeze') as requirements")
                             .takes_value(false)
                         )
+                        .arg(Arg::with_name("importd")
+                            .short("d")
+                            .long("importd")
+                            .help("Import dependencies from a file.")
+                            .takes_value(true)
+                        )
                     )
                     .get_matches();
 
@@ -73,33 +85,45 @@ fn main() {
         }
     }
     viper_utils::fh::create_boilerplate_files(&path_name, venv);
-    
-    // Checking pip version
-    viper_utils::cli::check_pip_version();
 
-    // Creating requirements.txt
-    let requirements_file = viper_utils::fh::create_requirements_file(&path_name);
+    if (venv) {
+        // Checking pip version
+        viper_utils::cli::check_pip_version();
 
-    // Parsing Module Arguments
-    let mut modules = Vec::new();
+        // Creating requirements.txt
+        let requirements_file = viper_utils::fh::create_requirements_file(&path_name);
 
-    if let Some(matches) = matches.subcommand_matches("new") {
-        if matches.is_present("module") {
-            println!("\nExternal Modules Specified: ");
-            for m in matches.values_of("module").unwrap() {
-                    println!("{:?}", m);
-                    modules.push(m);
+        // Parsing Module Arguments
+        let mut modules = Vec::new();
+
+        if let Some(matches) = matches.subcommand_matches("new") {
+            if matches.is_present("module") {
+                println!("\nExternal Modules Specified: ");
+                for m in matches.values_of("module").unwrap() {
+                        println!("{:?}", m);
+                        modules.push(m);
+                }
             }
-        }
 
-        if matches.is_present("freeze") {
-            viper_utils::fh::freeze(2, &requirements_file);
-        } else if matches.is_present("freeze3") {
-            viper_utils::fh::freeze(3, &requirements_file);
+            if matches.is_present("freeze") {
+                viper_utils::fh::freeze(2, &requirements_file);
+            } else if matches.is_present("freeze3") {
+                viper_utils::fh::freeze(3, &requirements_file);
+            }
+
+            if matches.is_present("importd") {
+                // Parsing filename
+                let filename = matches.value_of("importd").unwrap();
+
+                // Opening and Reading from file
+                let data = fs::read_to_string(filename).expect("!Error: unable to read dependencies file.");
+            }
+
+            // Extension
+            viper_utils::fh::set_requirements(modules, &requirements_file);
         }
     }
 
-    // Extension
-    viper_utils::fh::set_requirements(modules, &requirements_file);
+    viper_utils::cli::install_git(&path_name);
 
 }
