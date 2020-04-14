@@ -2,6 +2,7 @@
 
 extern crate clap;
 extern crate indicatif; // Progress Bar Crate
+extern crate json;
 
 // Crate Directives
 // ----------------------------------------------------------------------------------------
@@ -60,37 +61,90 @@ fn main() {
                             .help("Import dependencies from a file.")
                             .takes_value(true)
                         )
+                        .arg(Arg::with_name("pack")
+                            .short("p")
+                            .long("pack")
+                            .help("Create a template using the project settings. Saved in the project root directory.")
+                            .takes_value(true)
+                        )
+                    )
+                    .subcommand(SubCommand::with_name("template")
+                        .about("Creates a project template.")
+                        .arg(Arg::with_name("name")
+                            .short("n")
+                            .long("name")
+                            .help("Specify the name for the location.")
+                            .takes_value(true)
+                            .required(true)
+                            .index(1)
+                        )
+                        .arg(Arg::with_name("location")
+                            .short("l")
+                            .long("location")
+                            .help("Specify where to save the new template. Default: ")
+                            .takes_value(true)
+                            .required(false)
+                            .index(2)
+                        )
+                        .arg(Arg::with_name("env")
+                            .short("e")
+                            .long("env")
+                            .help("Creates a venv for the project."))
+                        .arg(Arg::with_name("module")
+                            .short("m")
+                            .long("module")
+                            .help("Specify an external package to include in the project in the format <modulename>@<version>.")
+                            .multiple(true)
+                            .takes_value(true)
+                        )
+                        .arg(Arg::with_name("freeze")
+                            .short("f")
+                            .long("freeze")
+                            .help("Specify installed modules (provided by 'pip freeze') as requirements")
+                            .takes_value(false)
+                        )
+                        .arg(Arg::with_name("freeze3")
+                            .short("F")
+                            .long("freeze3")
+                            .help("Specify installed modules (provided by 'pip3 freeze') as requirements")
+                            .takes_value(false)
+                        )
+                        .arg(Arg::with_name("importd")
+                            .short("d")
+                            .long("importd")
+                            .help("Import dependencies from a file.")
+                            .takes_value(true)
+                        )
                     )
                     .get_matches();
 
     // Initializing the Progress Bar
     let _bar = ProgressBar::new(100);
 
-    // Parsing the project name
-    let project_name = matches.subcommand_matches("new").unwrap().value_of("name").unwrap();
-    let path_name = format!("./{}", project_name);
-    println!("Creating Project... {:?}", project_name);
-
-    // Creating Project Directory & main.py;
-    let mut venv: bool = false;
     if let Some(matches) = matches.subcommand_matches("new") {
+        // Parsing the project name
+        let project_name = matches.subcommand_matches("new").unwrap().value_of("name").unwrap();
+        let path_name = format!("./{}", project_name);
+        println!("Creating Project... {:?}", project_name);
+
+        // Creating Project Directory & main.py;
+        let mut venv: bool = false;
         if matches.is_present("env") {
             venv = true;
         }
-    }
-    viper_utils::fh::create_boilerplate_files(&path_name, venv);
 
-    if (venv) {
-        // Checking pip version
-        viper_utils::cli::check_pip_version();
+        viper_utils::fh::create_boilerplate_files(&path_name, venv);
 
-        // Creating requirements.txt
-        let requirements_file = viper_utils::fh::create_requirements_file(&path_name);
+        if (venv) {
+            // Checking pip version
+            viper_utils::cli::check_pip_version();
 
-        // Parsing Module Arguments
-        let mut modules = Vec::new();
+            // Creating requirements.txt
+            let requirements_file = viper_utils::fh::create_requirements_file(&path_name);
 
-        if let Some(matches) = matches.subcommand_matches("new") {
+            // Parsing Module Arguments
+            let mut modules = Vec::new();
+
             if matches.is_present("module") {
                 println!("\nExternal Modules Specified: ");
                 for m in matches.values_of("module").unwrap() {
@@ -113,20 +167,66 @@ fn main() {
                 let data = fs::read_to_string(filename).expect("!Error: unable to read dependencies file.");
             }
 
-            // Extension
+            // Set Requirements
             viper_utils::fh::set_requirements(modules, &requirements_file);
-        }
-    } else {
-        if let Some(matches) = matches.subcommand_matches("new") {
-            if matches.is_present("module")
-              || matches.is_present("freeze")
-              || matches.is_present("freeze3")
-              || matches.is_present("importd"){
-                println!("\n!Cannot add dependencies: venv not specified")
+
+        } else {
+            if let Some(matches) = matches.subcommand_matches("new") {
+                if matches.is_present("module")
+                || matches.is_present("freeze")
+                || matches.is_present("freeze3")
+                || matches.is_present("importd"){
+                    println!("\n!Cannot add dependencies: venv not specified")
+                }
             }
         }
+        // Install git via the cli
+        viper_utils::cli::install_git(&path_name);
+    } else if let Some(matches) = matches.subcommand_matches("template") {
+        // Parsing the template name
+        let template_name = matches.value_of("name").unwrap();
+
+        let mut template = json::object!{
+            "name": template_name,
+            "language": "python",
+            "config": {
+                modules: [],
+            }
+        };
+
+        // Env Option
+        let venv: bool = matches.is_present("env");
+        if venv {
+            template["config"]["env"] = json::JsonValue::Boolean(true);
+        } else {
+            template["config"]["env"] = json::JsonValue::Boolean(false);
+        }
+
+        if (venv) {
+            // Parsing Module Arguments
+            if matches.is_present("module") {
+                template["config"]["modules"] = json::JsonValue::new_array();
+                println!("\nExternal Modules Specified: ");
+                for m in matches.values_of("module").unwrap() {
+                        println!("{:?}", m);
+                        template["config"]["modules"].push(m);
+                }
+            }
+
+            // Freeze Option
+            if matches.is_present("freeze") {
+                template["config"]["freeze"] = json::JsonValue::Boolean(true);
+            } else {
+                template["config"]["freeze3"] = json::JsonValue::Boolean(true);
+            }
+
+            // Importd Option
+            if matches.is_present("importd") {
+                let filename = matches.value_of("importd").unwrap();
+                template["config"]["importd"] = json::JsonValue::String(json::stringify(filename.to_string()));
+            }
+        }
+
+        println!("{:?}", template);
     }
-
-    viper_utils::cli::install_git(&path_name);
-
 }

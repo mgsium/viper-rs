@@ -267,6 +267,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92c245af8786f6ac35f95ca14feca9119e71339aaab41e878e7cdd655c97e9e5"
 
 [[package]]
+name = "json"
+version = "0.12.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "078e285eafdfb6c4b434e0d31e8cfcb5115b651496faca5749b88fafd4f23bfd"
+
+[[package]]
 name = "language-tags"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -523,7 +529,7 @@ checksum = "2e29be4b28ec447cd9f6753353a1255fdf2677a30e6c7115e73667e1eb80dbf3"
 dependencies = [
  "hyper",
  "hyper-native-tls",
- "json",
+ "json 0.11.15",
 ]
 
 [[package]]
@@ -719,6 +725,7 @@ dependencies = [
  "clap",
  "dialoguer",
  "indicatif",
+ "json 0.12.4",
  "lazy_static 1.4.0",
  "regex",
  "requests",

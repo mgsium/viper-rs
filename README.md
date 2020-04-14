@@ -4,6 +4,11 @@ A Rust command-line tool to simplify the creation and setup of python projects.
 
 *Viper* allows you to create a new python virtual environment and add initial dependencies with a single command. Dependencies can be imported from a text file, specified inline, or ignored entirely if you forego the virtual environment.
 
+## Main Features
+- *Easy Project Creation* - the `viper new` subcommand allows for the creation of a project folder, venv and requirements file in one simple command.
+- *Templating* - Config options can be handled in terms of templates containing config details in json format, which can be re-used in the future. By default templates are stored in...
+- *Tabling* - viper indexes each python project you create, allowing to to create, delete, move and copy them with ease. View projects with "viper list"
+
 ## Installation
 ```
 cargo install viper
@@ -49,9 +54,11 @@ ARGS:
 ```
 
 ## Versions
-**0.1.2** Dependency Management, venv now optional.
+**0.1.22**  Error handling improved.
 
-**0.1.0** Initial commit
+**0.1.2**  Dependency Management, venv now optional.
+
+**0.1.0**  Initial commit
 
 ## License
 Viper is distributed under the terms of both the MIT license and the Apache License (Version 2.0).
