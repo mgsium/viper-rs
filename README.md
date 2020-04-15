@@ -6,8 +6,9 @@ A Rust command-line tool to simplify the creation and setup of python projects.
 
 ## Main Features
 - *Easy Project Creation* - the `viper new` subcommand allows for the creation of a project folder, venv and requirements file in one simple command.
-- *Templating* - Config options can be handled in terms of templates containing config details in json format, which can be re-used in the future. By default templates are stored in...
-- *Tabling* - viper indexes each python project you create, allowing to to create, delete, move and copy them with ease. View projects with "viper list"
+- *Templating* - Config options can be handled in terms of templates containing config details in json format. By default templates are stored in the current directory, but an alternative location can be specified. 
+<!--- - *Tabling* - viper indexes each python project you create, allowing to to create, delete, move and copy them with ease. View projects with "viper list"
+-->
 
 ## Installation
 ```

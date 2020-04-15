@@ -10,6 +10,8 @@ use clap::{Arg, App, SubCommand};
 use indicatif::ProgressBar;
 use std::io::{Read, Write, BufRead, BufReader};
 use std::fs;
+use std::error::Error;
+use std::path;
 // ----------------------------------------------------------------------------------------
 
 
@@ -116,6 +118,15 @@ fn main() {
                             .takes_value(true)
                         )
                     )
+                    .subcommand(SubCommand::with_name("build")
+                        .arg(Arg::with_name("path")
+                            .short("p")
+                            .long("path")
+                            .help("Path of the template from which to build the project.")
+                            .required(true)
+                            .takes_value(true)
+                        )
+                    )
                     .get_matches();
 
     // Initializing the Progress Bar
@@ -135,7 +146,7 @@ fn main() {
 
         viper_utils::fh::create_boilerplate_files(&path_name, venv);
 
-        if (venv) {
+        if venv {
             // Checking pip version
             viper_utils::cli::check_pip_version();
 
@@ -202,7 +213,7 @@ fn main() {
             template["config"]["env"] = json::JsonValue::Boolean(false);
         }
 
-        if (venv) {
+        if venv {
             // Parsing Module Arguments
             if matches.is_present("module") {
                 template["config"]["modules"] = json::JsonValue::new_array();
@@ -227,6 +238,25 @@ fn main() {
             }
         }
 
-        println!("{:?}", template);
+        let pre_path: String;
+
+        if let Some(v) = matches.value_of("location") {
+            pre_path = v.to_string();
+        } else {
+            pre_path = "".to_string();
+        }
+        
+        let file_path = format!("{}./{}.json", pre_path, template_name);
+        let path = path::Path::new(&file_path);
+        let display = path.display();
+
+        let mut file = match fs::File::create(&path) {
+            Err(why) => panic!("Couldn't create {}: {}", display, why.description()),
+            Ok(file) => file,
+        };
+
+        file.write(template.dump().as_bytes()).expect("!Could not write to file.");
+
+        // println!("{:?}", template);
     }
 }
