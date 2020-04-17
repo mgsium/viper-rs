@@ -720,7 +720,7 @@ checksum = "914b1a6776c4c929a602fafd8bc742e06365d4bcbe48c30f9cca5824f70dc9dd"
 
 [[package]]
 name = "viper"
-version = "0.1.23"
+version = "0.1.24"
 dependencies = [
  "clap",
  "dialoguer",
