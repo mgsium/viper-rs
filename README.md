@@ -14,48 +14,46 @@ A Rust command-line tool to simplify the creation and setup of python projects.
 ```
 cargo install viper
 ```
-## Usage *viper*
+
+## Examples
+``` 
+// Create a project directory, initialize a virtual environment and add dependencies
+viper new "./TestProject" -e -F -m="matplotlib"
+```
+
+```
+// Create a templete
+viper template "./TestProjectTemplate" -e -f -m="matplotlib"
+// Build template (equivalent to the first command)
+viper build "TestProjectTemplate.json" "TestProject"
+```
+
+## Usage
 ```
 viper 0.1
 Musab G. <musabgumaa@gmail.com>
 
 USAGE:
-    viper.exe [OPTIONS] [SUBCOMMAND]
+    viper.exe [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    help    Prints this message or the help of the given subcommand(s)
-    new     Creates a new project.
-```
-### Usage *viper new*
-```
-viper.exe-new 
-Creates a new project.
+    build       
+    help        Prints this message or the help of the given subcommand(s)
+    new         Creates a new project.
+    template    Creates a project template.
 
-USAGE:
-    viper.exe new [FLAGS] [OPTIONS] <name>
-
-FLAGS:
-    -e, --env        Creates a venv for the project.
-    -f, --freeze     Specify installed modules (provided by 'pip freeze') as requirements
-    -F, --freeze3    Specify installed modules (provided by 'pip3 freeze') as requirements
-    -h, --help       Prints help information
-    -V, --version    Prints version information
-
-OPTIONS:
-    -d, --importd <importd>     Import dependencies from a file.
-    -m, --module <module>...    Specify an external package to include in the project in the format
-                                <modulename>@<version>.
-
-ARGS:
-    <name>    Specify the name for the project
 ```
 
 ## Versions
-**0.1.22**  Error handling improved.
+**0.1.24** Ability to build from template (viper build subcommand)
+
+**0.1.23** Template Creation (viper template subcommand)
+
+**0.1.22**  Error handling improved
 
 **0.1.2**  Dependency Management, venv now optional.
 

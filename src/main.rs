@@ -125,6 +125,14 @@ fn main() {
                             .help("Path of the template from which to build the project.")
                             .required(true)
                             .takes_value(true)
+                            .index(1)
+                        )
+                        .arg(Arg::with_name("name")
+                            .short("n")
+                            .long("name")
+                            .help("Specify the name for the project (including the full or relative path).")
+                            .required(true)
+                            .index(2)
                         )
                     )
                     .get_matches();
@@ -135,7 +143,7 @@ fn main() {
     if let Some(matches) = matches.subcommand_matches("new") {
         // Parsing the project name
         let project_name = matches.subcommand_matches("new").unwrap().value_of("name").unwrap();
-        let path_name = format!("./{}", project_name);
+        let path_name = format!("{}", project_name);
         println!("Creating Project... {:?}", project_name);
 
         // Creating Project Directory & main.py;
@@ -173,9 +181,8 @@ fn main() {
             if matches.is_present("importd") {
                 // Parsing filename
                 let filename = matches.value_of("importd").unwrap();
-
                 // Opening and Reading from file
-                let data = fs::read_to_string(filename).expect("!Error: unable to read dependencies file.");
+                let _imported_dependencies = fs::read_to_string(filename).expect("!Error: unable to read dependencies file.");
             }
 
             // Set Requirements
@@ -186,7 +193,7 @@ fn main() {
                 if matches.is_present("module")
                 || matches.is_present("freeze")
                 || matches.is_present("freeze3")
-                || matches.is_present("importd"){
+                || matches.is_present("importd") {
                     println!("\n!Cannot add dependencies: venv not specified")
                 }
             }
@@ -238,6 +245,8 @@ fn main() {
             }
         }
 
+        print!("{:#}", template.pretty(4));
+
         let pre_path: String;
 
         if let Some(v) = matches.value_of("location") {
@@ -258,5 +267,77 @@ fn main() {
         file.write(template.dump().as_bytes()).expect("!Could not write to file.");
 
         // println!("{:?}", template);
+    } else if let Some(matches) = matches.subcommand_matches("build") {
+        // Reading from the file
+        let path = matches.value_of("path").unwrap();
+        let mut file = fs::File::open(&path).unwrap();
+        let mut data = String::new();
+        file.read_to_string(&mut data).unwrap();
+
+        // parsing json
+        let template = json::parse(&data).unwrap();
+        let name = matches.value_of("name").unwrap();
+
+        // User indicator
+        println!("Creating Project... {}", matches.value_of("name").unwrap());
+        print!("\nTemplate File:\n{:#}", template.pretty(4));
+
+        // Parsing options
+        let mut venv: bool = false;
+        if Some(true) == template["config"]["env"].as_bool() {
+            venv = true;
+        }
+
+        viper_utils::fh::create_boilerplate_files(&name, venv);
+
+        if venv {
+            // Checking pip version
+            viper_utils::cli::check_pip_version();
+
+            // Creating requirements.txt
+            let requirements_file = viper_utils::fh::create_requirements_file(&name);
+
+            // Parsing Module 
+            let mut modules = Vec::new();
+
+            if template["config"]["modules"].len() > 0 {
+                let json_modules = &template["config"]["modules"];
+                println!("\n\nExternal Modules Specified: ");
+
+                for i in 0..json_modules.len() {
+                        println!("{} : {:?}", i, json_modules[i].as_str().unwrap());
+                        modules.push(json_modules[i].as_str().unwrap());
+                }
+            }
+
+            // Parsing freeze/freeze3 option
+            if template["config"]["freeze"].as_bool().unwrap() {
+                viper_utils::fh::freeze(2, &requirements_file);
+            } else if template["config"]["freeze3"].as_bool().unwrap() {
+                viper_utils::fh::freeze(3, &requirements_file);
+            }
+
+            // Parsing importd option
+            if template["config"]["importd"].len() > 0 {
+                // Parsing filename
+                let filename = template["config"]["importd"].as_str().unwrap();
+                // Opening and Reading from file
+                let _imported_dependencies = fs::read_to_string(filename).expect("!Error: unable to read dependencies file.");
+            }
+
+            // Set Requirements
+            viper_utils::fh::set_requirements(modules, &requirements_file);
+        } else {
+            let config = &template["config"];
+
+            if config["modules"].len() > 0
+            || config["freeze"].as_bool().unwrap()
+            || config["freeze3"].as_bool().unwrap()
+            || config["importd"].as_bool().unwrap() {
+                println!("\n!Cannot add dependencies: venv not specified")
+            }
+        }
+        // Install git via the cli
+        viper_utils::cli::install_git(&name);
     }
 }
