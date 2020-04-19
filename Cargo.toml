@@ -10,11 +10,7 @@ readme = "README.md"
 license = "MIT OR Apache-2.0"
 
 [badges]
-appveyor = { 
-    repository = "https://github.com/mgsium/Viper", 
-    branch = "master", 
-    service = "github" 
-    }
+appveyor = { repository = "https://github.com/mgsium/Viper", branch = "master", service = "github" }
 
 [lib]
 name="viper_utils"
