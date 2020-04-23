@@ -4,6 +4,8 @@ extern crate clap;
 extern crate indicatif; // Progress Bar Crate
 extern crate json;
 
+mod control;
+
 // Crate Directives
 // ----------------------------------------------------------------------------------------
 use clap::{Arg, App, SubCommand};
@@ -12,6 +14,7 @@ use std::io::{Read, Write, BufRead, BufReader};
 use std::fs;
 use std::error::Error;
 use std::path;
+use control::tabling;
 // ----------------------------------------------------------------------------------------
 
 
@@ -119,6 +122,7 @@ fn main() {
                         )
                     )
                     .subcommand(SubCommand::with_name("build")
+                        .about("Builds a project from a json template.")
                         .arg(Arg::with_name("path")
                             .short("p")
                             .long("path")
@@ -134,6 +138,9 @@ fn main() {
                             .required(true)
                             .index(2)
                         )
+                    )
+                    .subcommand(SubCommand::with_name("list")
+                        .about("Lists locally saved templates.")
                     )
                     .get_matches();
 
@@ -266,7 +273,9 @@ fn main() {
 
         file.write(template.dump().as_bytes()).expect("!Could not write to file.");
 
-        // println!("{:?}", template);
+        //println!("{:?}", template);
+        println!("{}", tabling::add_template(template, &file_path, template_name));
+
     } else if let Some(matches) = matches.subcommand_matches("build") {
         // Reading from the file
         let path = matches.value_of("path").unwrap();
@@ -339,5 +348,7 @@ fn main() {
         }
         // Install git via the cli
         viper_utils::cli::install_git(&name);
+    } else if let Some(matches) = matches.subcommand_matches("list") {
+        tabling::list_templates();
     }
 }
