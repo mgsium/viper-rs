@@ -6,9 +6,8 @@ A Rust command-line tool to simplify the creation and setup of python projects.
 
 ## Main Features
 - *Easy Project Creation* - the `viper new` subcommand allows for the creation of a project folder, venv and requirements file in one simple command.
-- *Templating* - Config options can be handled in terms of templates containing config details in json format. By default templates are stored in the current directory, but an alternative location can be specified. 
-<!--- - *Tabling* - viper indexes each python project you create, allowing to to create, delete, move and copy them with ease. View projects with "viper list"
--->
+- *Templating* - Config options can be handled in terms of templates containing config details in json format. Templates can be added, deleted, and used to build a project in a standard format. By default templates are stored in the current directory, but an alternative location can be specified. 
+- *Tabling (Coming Soon)* - viper indexes each python project you create, allowing to to create, delete, move and copy them with ease.
 
 ## Installation
 ```
@@ -16,21 +15,35 @@ cargo install viper
 ```
 
 ## Examples
+
+- Create a basic new project
 ``` 
-// Create a project directory, initialize a virtual environment and add dependencies
-viper new "./TestProject" -e -F -m="matplotlib"
+viper new "./TestProject""
 ```
 
+- Create a template, specifying a venv (-e), freeze modules (-f) and add matplotlib to requirements.txt (-m="matplotlib")
 ```
-// Create a templete
 viper template "./TestProjectTemplate" -e -f -m="matplotlib"
-// Build template (equivalent to the first command)
+```
+
+- Build template (equivalent to the first command)
+```
 viper build "TestProjectTemplate.json" "TestProject"
+```
+
+- List Created templates
+```
+viper list
+```
+
+- Delete Template at index 0 (find index using viper list)
+``` 
+viper remove 0
 ```
 
 ## Usage
 ```
-viper 0.1
+viper 0.2
 Musab G. <musabgumaa@gmail.com>
 
 USAGE:
@@ -41,14 +54,17 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    build       
+    build       Builds a project from a json template.
     help        Prints this message or the help of the given subcommand(s)
+    list        Lists locally saved templates.
     new         Creates a new project.
+    remove      Remove a template.
     template    Creates a project template.
-
 ```
 
 ## Versions
+**0.2.0** Template creation improved; deletion and build from template added.
+
 **0.1.24** Ability to build from template (viper build subcommand)
 
 **0.1.23** Template Creation (viper template subcommand)

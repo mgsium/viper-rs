@@ -14,6 +14,7 @@ use std::io::{Read, Write, BufRead, BufReader};
 use std::fs;
 use std::error::Error;
 use std::path;
+use std::any::type_name;
 use control::tabling;
 // ----------------------------------------------------------------------------------------
 
@@ -23,6 +24,10 @@ use std::fs;
 use std::error::Error;
 use std::path;
 */
+
+fn type_of<T>(_: T) -> &'static str {
+    type_name::<T>()
+}
 
 fn main() {
     // Defining command, subcommands and options
@@ -139,8 +144,23 @@ fn main() {
                             .index(2)
                         )
                     )
+                    .subcommand(SubCommand::with_name("remove")
+                        .about("Remove a template.")
+                        .arg(Arg::with_name("index")
+                            .short("i")
+                            .long("index")
+                            .help("specify the index of the template you want to remove (view with viper list)")
+                            .required(true)
+                            .index(1)
+                        )
+                    )
                     .subcommand(SubCommand::with_name("list")
                         .about("Lists locally saved templates.")
+                        .arg(Arg::with_name("verbose")
+                            .short("v")
+                            .long("verbose")
+                            .help("Show verbose output.")
+                        )
                     )
                     .get_matches();
 
@@ -149,7 +169,7 @@ fn main() {
 
     if let Some(matches) = matches.subcommand_matches("new") {
         // Parsing the project name
-        let project_name = matches.subcommand_matches("new").unwrap().value_of("name").unwrap();
+        let project_name = matches.value_of("name").unwrap();
         let path_name = format!("{}", project_name);
         println!("Creating Project... {:?}", project_name);
 
@@ -236,13 +256,20 @@ fn main() {
                         println!("{:?}", m);
                         template["config"]["modules"].push(m);
                 }
+            } else {
+                template["config"]["modules"] = json::JsonValue::new_array();
             }
 
             // Freeze Option
             if matches.is_present("freeze") {
                 template["config"]["freeze"] = json::JsonValue::Boolean(true);
-            } else {
+                template["config"]["freeze3"] = json::JsonValue::Boolean(false);
+            } else if matches.is_present("freeze3"){
                 template["config"]["freeze3"] = json::JsonValue::Boolean(true);
+                template["config"]["freeze"] = json::JsonValue::Boolean(false);
+            } else {
+                template["config"]["freeze3"] = json::JsonValue::Boolean(false);
+                template["config"]["freeze"] = json::JsonValue::Boolean(false);
             }
 
             // Importd Option
@@ -277,14 +304,39 @@ fn main() {
         println!("{}", tabling::add_template(template, &file_path, template_name));
 
     } else if let Some(matches) = matches.subcommand_matches("build") {
-        // Reading from the file
-        let path = matches.value_of("path").unwrap();
-        let mut file = fs::File::open(&path).unwrap();
-        let mut data = String::new();
-        file.read_to_string(&mut data).unwrap();
+        let mut template: json::JsonValue = json::object!{};
 
-        // parsing json
-        let template = json::parse(&data).unwrap();
+        match matches.value_of("path").unwrap().parse::<i32>() {
+            Ok(index) => {
+                match dirs::home_dir() {
+                    Some(path) => {
+                        let mut sep_string = "\\";
+                        if cfg!(unix) {
+                            sep_string = "/";
+                        }
+
+                        // Open & Read File
+                        let contents = fs::read_to_string(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string)).expect("\n!Error: Could not read from file.");
+                        let mut templates = json::parse(&contents).unwrap(); 
+                        template = templates["templates"].array_remove(index as usize);
+                        // template = templates["templates"][matches.value_of("path").unwrap()];
+                    },
+                    _ => println!("\n!Error: Could not find home folder"),
+                }
+            },
+            Err(e) =>  {
+                // Reading from the file
+                let path = matches.value_of("path").unwrap();
+                let mut file = fs::File::open(&path).unwrap();
+                let mut data = String::new();
+                file.read_to_string(&mut data).unwrap();
+
+                // parsing json
+                template = json::parse(&data).unwrap();
+            }
+        }
+        
+        
         let name = matches.value_of("name").unwrap();
 
         // User indicator
@@ -337,18 +389,32 @@ fn main() {
             // Set Requirements
             viper_utils::fh::set_requirements(modules, &requirements_file);
         } else {
+            /*
             let config = &template["config"];
 
-            if config["modules"].len() > 0
+            match config["modules"].len() > 0
             || config["freeze"].as_bool().unwrap()
             || config["freeze3"].as_bool().unwrap()
             || config["importd"].as_bool().unwrap() {
-                println!("\n!Cannot add dependencies: venv not specified")
+                true => println!("\n!Cannot add dependencies: venv not specified"),
+                _ => (),
             }
+            */
         }
         // Install git via the cli
         viper_utils::cli::install_git(&name);
     } else if let Some(matches) = matches.subcommand_matches("list") {
-        tabling::list_templates();
+        let mut verbose: bool = false;
+        if matches.is_present("verbose") {
+            verbose = true;
+        }
+
+        tabling::list_templates(verbose);
+    } else if let Some(matches) = matches.subcommand_matches("remove") {
+        match matches.value_of("index").unwrap().parse::<i32>() {
+            Ok(val) => tabling::remove_template(val),
+            Err(e) => println!("!Error: index must be an integer."),
+        }
+        
     }
 }
