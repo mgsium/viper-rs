@@ -1,5 +1,5 @@
 [package]
-name = "viper-rs"
+name = "viper"
 version = "0.2.1"
 authors = ["Musab Guma'a <musabgumaa@gmail.com>"]
 edition = "2018"
