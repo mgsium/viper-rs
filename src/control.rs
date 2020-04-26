@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 extern crate dirs;
 extern crate json;
 
@@ -5,6 +7,7 @@ pub mod tabling {
 
     use std::path::Path;
     use std::fs;
+
 
     pub fn add_template(template: json::JsonValue, template_path: &str, template_name: &str) -> String {
         match dirs::home_dir() {

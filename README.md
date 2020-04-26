@@ -1,4 +1,6 @@
-# Viper
+# viper-rs
+[![Build status](https://ci.appveyor.com/api/projects/status/l8a7wvywmu4nsxac?svg=true)](https://ci.appveyor.com/project/mgsium/viper)
+![Rust](https://github.com/mgsium/viper-rs/workflows/Rust/badge.svg)
 
 A Rust command-line tool to simplify the creation and setup of python projects.
 
@@ -63,6 +65,8 @@ SUBCOMMANDS:
 ```
 
 ## Versions
+**0.2.1** Minor Changes
+
 **0.2.0** Template creation improved; deletion and build from template added.
 
 **0.1.24** Ability to build from template (viper build subcommand)

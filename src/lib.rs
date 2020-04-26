@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 #[macro_use] extern crate lazy_static;
 extern crate regex;
 extern crate dialoguer;
@@ -12,8 +14,7 @@ pub mod fh {
     // Crate Directives
     // ----------------------------------------------------------------------------------------
     use std::fs;
-    use std::io::{Read, Write};
-    use std::error::Error;
+    use std::io::Write;
     use std::path;
     use regex::Regex;
 
@@ -51,7 +52,7 @@ pub mod fh {
         let display = path.display();
 
         let mut file = match fs::File::create(&path) {
-            Err(why) => panic!("Couldn't create {}: {}", display, why.description()),
+            Err(why) => panic!("Couldn't create {}: {}", display, why.to_string()),
             Ok(file) => file,
         };
 
@@ -71,7 +72,7 @@ if __name__ == \"__main__\":
         let display = path.display();
 
         let file = match fs::File::create(&path) {
-            Err(why) => panic!("Couldn't create {}: {}", display, why.description()),
+            Err(why) => panic!("Couldn't create {}: {}", display, why.to_string()),
             Ok(file) => file,
         };
 
@@ -141,7 +142,7 @@ if __name__ == \"__main__\":
         }
 
         let mut has_version_num: bool = true;
-        let mut ver;
+        let ver;
 
         let output = Command::new("yolk")
             .args(&["-V", &m])
@@ -257,7 +258,7 @@ pub mod cli {
         let mut choice: bool = false;
         match selection {
             0 => choice = true,
-            _ => choice = false
+            _ => ()
         }
 
         if choice {

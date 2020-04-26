@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#![allow(non_snake_case)]
 
 extern crate clap;
 extern crate indicatif; // Progress Bar Crate
@@ -8,7 +9,7 @@ mod control;
 
 // Crate Directives
 // ----------------------------------------------------------------------------------------
-use clap::{Arg, App, SubCommand};
+use clap::{Arg, App, SubCommand, AppSettings};
 use indicatif::ProgressBar;
 use std::io::{Read, Write, BufRead, BufReader};
 use std::fs;
@@ -32,8 +33,9 @@ fn type_of<T>(_: T) -> &'static str {
 fn main() {
     // Defining command, subcommands and options
     let matches = App::new("viper")
-                    .version("0.1")
+                    .version("0.2.1")
                     .author("Musab G. <musabgumaa@gmail.com>")
+                    .setting(AppSettings::ArgRequiredElseHelp)
                     .subcommand(SubCommand::with_name("new")
                         .about("Creates a new project.")
                         .arg(Arg::with_name("name")
