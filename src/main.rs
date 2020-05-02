@@ -4,6 +4,7 @@
 extern crate clap;
 extern crate indicatif; // Progress Bar Crate
 extern crate json;
+#[macro_use] extern crate prettytable;
 
 mod control;
 
@@ -33,7 +34,7 @@ fn type_of<T>(_: T) -> &'static str {
 fn main() {
     // Defining command, subcommands and options
     let matches = App::new("viper")
-                    .version("0.2.1")
+                    .version("0.3.0")
                     .author("Musab G. <musabgumaa@gmail.com>")
                     .setting(AppSettings::ArgRequiredElseHelp)
                     .subcommand(SubCommand::with_name("new")
@@ -157,11 +158,29 @@ fn main() {
                         )
                     )
                     .subcommand(SubCommand::with_name("list")
-                        .about("Lists locally saved templates.")
+                        .about("Lists locally saved projects and templates.")
                         .arg(Arg::with_name("verbose")
                             .short("v")
                             .long("verbose")
                             .help("Show verbose output.")
+                        )
+                        .arg(Arg::with_name("templates")
+                            .short("t")
+                            .long("templates")
+                            .help("Filters list to show only templates.")
+                        )
+                        .arg(Arg::with_name("projects")
+                            .short("p")
+                            .long("projects")
+                            .help("Filters list to show only projects.")
+                        )
+                    )
+                    .subcommand(SubCommand::with_name("update")
+                        .about("Updates template & project details in .record.json")
+                        .arg(Arg::with_name("path")
+                            .short("p")
+                            .long("path")
+                            .help("specify project path")
                         )
                     )
                     .get_matches();
@@ -229,6 +248,11 @@ fn main() {
         }
         // Install git via the cli
         viper_utils::cli::install_git(&path_name);
+
+        // Add to .record.json
+        println!("Saving project.");
+        tabling::add_project(&path_name, &project_name, "");
+
     } else if let Some(matches) = matches.subcommand_matches("template") {
         // Parsing the template name
         let template_name = matches.value_of("name").unwrap();
@@ -291,7 +315,7 @@ fn main() {
             pre_path = "".to_string();
         }
         
-        let file_path = format!("{}./{}.json", pre_path, template_name);
+        let file_path = format!("{}./{}.json", pre_path, "template.json");
         let path = path::Path::new(&file_path);
         let display = path.display();
 
@@ -411,12 +435,30 @@ fn main() {
             verbose = true;
         }
 
-        tabling::list_templates(verbose);
+        if matches.is_present("templates") {
+            tabling::list_templates(verbose);
+        } else if matches.is_present("projects") {
+            tabling::list_projects(verbose);
+        } else {
+            tabling::list_templates(verbose);
+            tabling::list_projects(verbose);
+        }
+        
     } else if let Some(matches) = matches.subcommand_matches("remove") {
         match matches.value_of("index").unwrap().parse::<i32>() {
             Ok(val) => tabling::remove_template(val),
             Err(e) => println!("!Error: index must be an integer."),
         }
         
+    } else if let Some(matches) = matches.subcommand_matches("update") {
+        let mut sep_string = "\\";
+        if cfg!(unix) {
+            sep_string = "/";
+        }
+        
+
+        if path::Path::new(&format!("{}{}", matches.value_of("path").unwrap(), sep_string)).exists() {
+            control::tabling::update(&path::Path::new(&format!("{}{}", matches.value_of("path").unwrap(), sep_string)));
+        }
     }
 }
