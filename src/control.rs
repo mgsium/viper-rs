@@ -6,7 +6,7 @@ extern crate json;
 pub mod tabling {
 
     use std::path::Path;
-    use std::fs;
+    use std::{fs, io::*};
     use prettytable::{Table, Row, Cell};
 
 
@@ -218,6 +218,40 @@ pub mod tabling {
                     let t = record["templates"].array_remove(index as usize);
                     print!("\nRemoved template {}...\n{:#}\n", index, t);
                     fs::write(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string), record.dump()).expect("\n!Error: Could not write to .record.json");
+                }
+
+            },
+            _ => println!("!Error: Could not find home folder.")
+        }
+    }
+
+    pub fn remove_project(index: i32) {
+        // Open and read File 
+        match dirs::home_dir() {
+            Some(path) => {
+                let mut sep_string = "\\";
+                if cfg!(unix) {
+                    sep_string = "/";
+                }
+
+                // Open & Read File
+                let contents = fs::read_to_string(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string)).expect("\n!Error: Could not read from .record.json");
+                
+                let mut record: json::JsonValue;
+                if json::parse(&contents).is_ok() {
+                    record = json::parse(&contents).unwrap();
+                    let t = record["projects"].array_remove(index as usize);
+                    print!("\nRemoved project {}...\n{:#}\n", index, t);
+                    fs::write(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string), record.dump()).expect("\n!Error: Could not write to .record.json");
+                }
+
+                let mut choice = String::from("");
+
+                while choice.trim() != "y" && choice.trim() != "Y" && choice.trim() != "n" && choice.trim() != "N" { 
+                    print!("Would you like to delete the project folder? (y/N) : ");
+                    let _ = std::io::stdout().flush();
+                    std::io::stdin().read_line(&mut choice).expect("\nError: unable to read input.");
+                    println!("{}", choice);
                 }
 
             },

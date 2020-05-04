@@ -31,7 +31,7 @@ pub mod fh {
                     .output()
                     .expect("Could not install virtualenv.");
 
-            println!("\n. . .Building Project Directory.");
+            println!("\nBuilding Project Directory...");
 
             // Creating the Project Directory
             Command::new("virtualenv")

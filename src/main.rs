@@ -148,13 +148,26 @@ fn main() {
                         )
                     )
                     .subcommand(SubCommand::with_name("remove")
-                        .about("Remove a template.")
-                        .arg(Arg::with_name("index")
-                            .short("i")
-                            .long("index")
-                            .help("specify the index of the template you want to remove (view with viper list)")
-                            .required(true)
-                            .index(1)
+                        .about("Remove a template/project.")
+                        .subcommand(SubCommand::with_name("project")
+                            .about("Remove a project.")
+                            .arg(Arg::with_name("index")
+                                .short("i")
+                                .long("index")
+                                .help("specify the index of the project you want to remove (view with viper list -p)")
+                                .required(true)
+                                .index(1)
+                            )
+                        )
+                        .subcommand(SubCommand::with_name("template")
+                            .about("Remove a template.")
+                            .arg(Arg::with_name("index")
+                                .short("i")
+                                .long("index")
+                                .help("specify the index of the template you want to remove (view with viper list -t)")
+                                .required(true)
+                                .index(1)
+                            )
                         )
                     )
                     .subcommand(SubCommand::with_name("list")
@@ -315,7 +328,7 @@ fn main() {
             pre_path = "".to_string();
         }
         
-        let file_path = format!("{}./{}.json", pre_path, "template.json");
+        let file_path = format!("{}./{}.json", pre_path, "template");
         let path = path::Path::new(&file_path);
         let display = path.display();
 
@@ -445,9 +458,23 @@ fn main() {
         }
         
     } else if let Some(matches) = matches.subcommand_matches("remove") {
-        match matches.value_of("index").unwrap().parse::<i32>() {
-            Ok(val) => tabling::remove_template(val),
-            Err(e) => println!("!Error: index must be an integer."),
+
+        if let Some(matches) = matches.subcommand_matches("template") {
+            match matches.value_of("index").unwrap().parse::<i32>() {
+                Ok(index) => {
+                    println!("Removing template at index {}", index);
+                    control::tabling::remove_template(index);
+                },
+                _ => println!("Invalid Index")
+            }
+        } else if let Some(matches) = matches.subcommand_matches("project") {
+            match matches.value_of("index").unwrap().parse::<i32>() {
+                Ok(index) => {
+                    println!("Removing project at index {}", index);
+                    control::tabling::remove_project(index);
+                },
+                _ => println!("Invalid Index")
+            }
         }
         
     } else if let Some(matches) = matches.subcommand_matches("update") {
@@ -455,7 +482,6 @@ fn main() {
         if cfg!(unix) {
             sep_string = "/";
         }
-        
 
         if path::Path::new(&format!("{}{}", matches.value_of("path").unwrap(), sep_string)).exists() {
             control::tabling::update(&path::Path::new(&format!("{}{}", matches.value_of("path").unwrap(), sep_string)));
