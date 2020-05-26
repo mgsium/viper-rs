@@ -196,6 +196,12 @@ fn main() {
                             .help("specify project path")
                         )
                     )
+                    .subcommand(SubCommand::with_name("push")
+                        .about("Push your templates and projects into an online repository; this can only be accessed by you.")
+                    )
+                    .subcommand(SubCommand::with_name("pull")
+                        .about("Pull yout templates from an online repository. (Warning: this will overwrite local contents; push first to avoid deletion)")
+                    )
                     .get_matches();
 
     // Initializing the Progress Bar
@@ -486,5 +492,9 @@ fn main() {
         if path::Path::new(&format!("{}{}", matches.value_of("path").unwrap(), sep_string)).exists() {
             control::tabling::update(&path::Path::new(&format!("{}{}", matches.value_of("path").unwrap(), sep_string)));
         }
+    } else if let Some(matches) = matches.subcommand_matches("push") {
+        //
+    } else if let Some(matches) = matches.subcommand_matches("push") {
+        //
     }
 }
