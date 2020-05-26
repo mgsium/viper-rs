@@ -83,4 +83,5 @@ SUBCOMMANDS:
 **0.1.0**  Initial commit
 
 ## License
-Viper is distributed under the terms of both the MIT license and the Apache License (Version 2.0).
+<!-- Viper is distributed under the terms of both the MIT license and the Apache License (Version 2.0). -->
+Viper is distributed under the terms of the MIT license
