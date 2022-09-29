@@ -3,7 +3,6 @@
 #[macro_use] extern crate lazy_static;
 extern crate regex;
 extern crate dialoguer;
-extern crate requests;
 
 // use regex::Regex;
 
@@ -163,17 +162,6 @@ if __name__ == \"__main__\":
 
         return (RE.is_match(m) && has_version_num, ver.to_string());
     }
-
-    /*
-    fn get_latest_module_version(m: &str) {
-        let url = format!("https://pypi.python.org/pypi/{}/json", m);
-
-        let response = requests::get(&url).unwrap();
-        let data = response.json().unwrap();
-
-        println!("{:?}", data);
-    }
-    */
 
     fn install_yolk3k() {
         println!("\n...Installing yolk3k");

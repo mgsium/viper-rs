@@ -27,7 +27,7 @@ pub mod tabling {
                 }
 
                 // Open & Read File
-                let mut contents = fs::read_to_string(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string)).expect("\n!Error: Could not read from file.");
+                let contents = fs::read_to_string(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string)).expect("\n!Error: Could not read from file.");
                 
                 let mut record: json::JsonValue;
 
