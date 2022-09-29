@@ -4,22 +4,22 @@
 extern crate clap;
 extern crate indicatif; // Progress Bar Crate
 extern crate json;
-#[macro_use] extern crate prettytable;
+#[macro_use]
+extern crate prettytable;
 
 mod control;
 
 // Crate Directives
 // ----------------------------------------------------------------------------------------
-use clap::{Arg, App, SubCommand, AppSettings};
-use indicatif::ProgressBar;
-use std::io::{Read, Write, BufRead, BufReader};
-use std::fs;
-use std::error::Error;
-use std::path;
-use std::any::type_name;
+use clap::{App, AppSettings, Arg, SubCommand};
 use control::tabling;
+use indicatif::ProgressBar;
+use std::any::type_name;
+use std::error::Error;
+use std::fs;
+use std::io::{BufRead, BufReader, Read, Write};
+use std::path;
 // ----------------------------------------------------------------------------------------
-
 
 /*
 use std::fs;
@@ -234,8 +234,8 @@ fn main() {
             if matches.is_present("module") {
                 println!("\nExternal Modules Specified: ");
                 for m in matches.values_of("module").unwrap() {
-                        println!("{:?}", m);
-                        modules.push(m);
+                    println!("{:?}", m);
+                    modules.push(m);
                 }
             }
 
@@ -249,18 +249,19 @@ fn main() {
                 // Parsing filename
                 let filename = matches.value_of("importd").unwrap();
                 // Opening and Reading from file
-                let _imported_dependencies = fs::read_to_string(filename).expect("!Error: unable to read dependencies file.");
+                let _imported_dependencies = fs::read_to_string(filename)
+                    .expect("!Error: unable to read dependencies file.");
             }
 
             // Set Requirements
             viper_utils::fh::set_requirements(modules, &requirements_file);
-
         } else {
             if let Some(matches) = matches.subcommand_matches("new") {
                 if matches.is_present("module")
-                || matches.is_present("freeze")
-                || matches.is_present("freeze3")
-                || matches.is_present("importd") {
+                    || matches.is_present("freeze")
+                    || matches.is_present("freeze3")
+                    || matches.is_present("importd")
+                {
                     println!("\n!Cannot add dependencies: venv not specified")
                 }
             }
@@ -271,12 +272,11 @@ fn main() {
         // Add to .record.json
         println!("Saving project.");
         tabling::add_project(&path_name, &project_name, "");
-
     } else if let Some(matches) = matches.subcommand_matches("template") {
         // Parsing the template name
         let template_name = matches.value_of("name").unwrap();
 
-        let mut template = json::object!{
+        let mut template = json::object! {
             "name": template_name,
             "language": "python",
             "config": {
@@ -298,8 +298,8 @@ fn main() {
                 template["config"]["modules"] = json::JsonValue::new_array();
                 println!("\nExternal Modules Specified: ");
                 for m in matches.values_of("module").unwrap() {
-                        println!("{:?}", m);
-                        template["config"]["modules"].push(m);
+                    println!("{:?}", m);
+                    template["config"]["modules"].push(m);
                 }
             } else {
                 template["config"]["modules"] = json::JsonValue::new_array();
@@ -309,7 +309,7 @@ fn main() {
             if matches.is_present("freeze") {
                 template["config"]["freeze"] = json::JsonValue::Boolean(true);
                 template["config"]["freeze3"] = json::JsonValue::Boolean(false);
-            } else if matches.is_present("freeze3"){
+            } else if matches.is_present("freeze3") {
                 template["config"]["freeze3"] = json::JsonValue::Boolean(true);
                 template["config"]["freeze"] = json::JsonValue::Boolean(false);
             } else {
@@ -320,7 +320,8 @@ fn main() {
             // Importd Option
             if matches.is_present("importd") {
                 let filename = matches.value_of("importd").unwrap();
-                template["config"]["importd"] = json::JsonValue::String(json::stringify(filename.to_string()));
+                template["config"]["importd"] =
+                    json::JsonValue::String(json::stringify(filename.to_string()));
             }
         }
 
@@ -333,7 +334,7 @@ fn main() {
         } else {
             pre_path = "".to_string();
         }
-        
+
         let file_path = format!("{}./{}.json", pre_path, "template");
         let path = path::Path::new(&file_path);
         let display = path.display();
@@ -343,13 +344,16 @@ fn main() {
             Ok(file) => file,
         };
 
-        file.write(template.dump().as_bytes()).expect("!Could not write to file.");
+        file.write(template.dump().as_bytes())
+            .expect("!Could not write to file.");
 
         //println!("{:?}", template);
-        println!("{}", tabling::add_template(template, &file_path, template_name));
-
+        println!(
+            "{}",
+            tabling::add_template(template, &file_path, template_name)
+        );
     } else if let Some(matches) = matches.subcommand_matches("build") {
-        let mut template: json::JsonValue = json::object!{};
+        let mut template: json::JsonValue = json::object! {};
 
         match matches.value_of("path").unwrap().parse::<i32>() {
             Ok(index) => {
@@ -361,15 +365,21 @@ fn main() {
                         }
 
                         // Open & Read File
-                        let contents = fs::read_to_string(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string)).expect("\n!Error: Could not read from file.");
-                        let mut templates = json::parse(&contents).unwrap(); 
+                        let contents = fs::read_to_string(&format!(
+                            "{}{}.viper{}.record.json",
+                            path.to_str().unwrap(),
+                            sep_string,
+                            sep_string
+                        ))
+                        .expect("\n!Error: Could not read from file.");
+                        let mut templates = json::parse(&contents).unwrap();
                         template = templates["templates"].array_remove(index as usize);
                         // template = templates["templates"][matches.value_of("path").unwrap()];
-                    },
+                    }
                     _ => println!("\n!Error: Could not find home folder"),
                 }
-            },
-            Err(e) =>  {
+            }
+            Err(e) => {
                 // Reading from the file
                 let path = matches.value_of("path").unwrap();
                 let mut file = fs::File::open(&path).unwrap();
@@ -380,8 +390,7 @@ fn main() {
                 template = json::parse(&data).unwrap();
             }
         }
-        
-        
+
         let name = matches.value_of("name").unwrap();
 
         // User indicator
@@ -403,7 +412,7 @@ fn main() {
             // Creating requirements.txt
             let requirements_file = viper_utils::fh::create_requirements_file(&name);
 
-            // Parsing Module 
+            // Parsing Module
             let mut modules = Vec::new();
 
             if template["config"]["modules"].len() > 0 {
@@ -411,8 +420,8 @@ fn main() {
                 println!("\n\nExternal Modules Specified: ");
 
                 for i in 0..json_modules.len() {
-                        println!("{} : {:?}", i, json_modules[i].as_str().unwrap());
-                        modules.push(json_modules[i].as_str().unwrap());
+                    println!("{} : {:?}", i, json_modules[i].as_str().unwrap());
+                    modules.push(json_modules[i].as_str().unwrap());
                 }
             }
 
@@ -428,7 +437,8 @@ fn main() {
                 // Parsing filename
                 let filename = template["config"]["importd"].as_str().unwrap();
                 // Opening and Reading from file
-                let _imported_dependencies = fs::read_to_string(filename).expect("!Error: unable to read dependencies file.");
+                let _imported_dependencies = fs::read_to_string(filename)
+                    .expect("!Error: unable to read dependencies file.");
             }
 
             // Set Requirements
@@ -462,35 +472,42 @@ fn main() {
             tabling::list_templates(verbose);
             tabling::list_projects(verbose);
         }
-        
     } else if let Some(matches) = matches.subcommand_matches("remove") {
-
         if let Some(matches) = matches.subcommand_matches("template") {
             match matches.value_of("index").unwrap().parse::<i32>() {
                 Ok(index) => {
                     println!("Removing template at index {}", index);
                     control::tabling::remove_template(index);
-                },
-                _ => println!("Invalid Index")
+                }
+                _ => println!("Invalid Index"),
             }
         } else if let Some(matches) = matches.subcommand_matches("project") {
             match matches.value_of("index").unwrap().parse::<i32>() {
                 Ok(index) => {
                     println!("Removing project at index {}", index);
                     control::tabling::remove_project(index);
-                },
-                _ => println!("Invalid Index")
+                }
+                _ => println!("Invalid Index"),
             }
         }
-        
     } else if let Some(matches) = matches.subcommand_matches("update") {
         let mut sep_string = "\\";
         if cfg!(unix) {
             sep_string = "/";
         }
 
-        if path::Path::new(&format!("{}{}", matches.value_of("path").unwrap(), sep_string)).exists() {
-            control::tabling::update(&path::Path::new(&format!("{}{}", matches.value_of("path").unwrap(), sep_string)));
+        if path::Path::new(&format!(
+            "{}{}",
+            matches.value_of("path").unwrap(),
+            sep_string
+        ))
+        .exists()
+        {
+            control::tabling::update(&path::Path::new(&format!(
+                "{}{}",
+                matches.value_of("path").unwrap(),
+                sep_string
+            )));
         }
     } else if let Some(matches) = matches.subcommand_matches("push") {
         //

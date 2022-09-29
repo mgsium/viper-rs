@@ -1,8 +1,9 @@
 #![allow(non_snake_case)]
 
-#[macro_use] extern crate lazy_static;
-extern crate regex;
+#[macro_use]
+extern crate lazy_static;
 extern crate dialoguer;
+extern crate regex;
 
 // use regex::Regex;
 
@@ -12,10 +13,10 @@ extern crate dialoguer;
 pub mod fh {
     // Crate Directives
     // ----------------------------------------------------------------------------------------
+    use regex::Regex;
     use std::fs;
     use std::io::Write;
     use std::path;
-    use regex::Regex;
 
     use std::process::Command;
     // ----------------------------------------------------------------------------------------
@@ -26,19 +27,22 @@ pub mod fh {
         if venv {
             // Installing virtualenv
             Command::new("pip")
-                    .args(&["install", "virtualenv"])
-                    .output()
-                    .expect("Could not install virtualenv.");
+                .args(&["install", "virtualenv"])
+                .output()
+                .expect("Could not install virtualenv.");
 
             println!("\nBuilding Project Directory...");
 
             // Creating the Project Directory
             Command::new("virtualenv")
-                    .arg(&path_name)
-                    .output()
-                    .expect("Could not create virtual environment.");
+                .arg(&path_name)
+                .output()
+                .expect("Could not create virtual environment.");
         } else {
-            fs::create_dir_all(path_name).expect(&format!("!Error: Could not create project directory at {}", path_name));
+            fs::create_dir_all(path_name).expect(&format!(
+                "!Error: Could not create project directory at {}",
+                path_name
+            ));
         }
 
         println!("\n. . .Done!");
@@ -55,13 +59,16 @@ pub mod fh {
             Ok(file) => file,
         };
 
-        file.write(b"
+        file.write(
+            b"
 def main():
     print('Hello, World!')
 
 if __name__ == \"__main__\":
     main()
-        ").expect("!Error: Unable for write to file main.py");
+        ",
+        )
+        .expect("!Error: Unable for write to file main.py");
     }
 
     pub fn create_requirements_file(path_name: &str) -> fs::File {
@@ -91,7 +98,8 @@ if __name__ == \"__main__\":
             let (is_valid, version_num) = check_module_format(m);
             if is_valid {
                 println!("{} :  OK", m);
-                file.write(format!("{}\n", str::replace(&version_num, " ", "==")).as_bytes()).expect("!Error: Could not write module to file.");
+                file.write(format!("{}\n", str::replace(&version_num, " ", "==")).as_bytes())
+                    .expect("!Error: Could not write module to file.");
             } else {
                 println!("{} : Issue Encountered", m);
                 return false;
@@ -117,11 +125,12 @@ if __name__ == \"__main__\":
         // println!("{}", format!("{}/requirements.txt", project_path));
 
         let output = Command::new(&command)
-                .args(&["freeze"])
-                .output()
-                .expect("\n!Error: Could not create requirements.txt");
+            .args(&["freeze"])
+            .output()
+            .expect("\n!Error: Could not create requirements.txt");
 
-        file.write(&output.stdout).expect("\n!Error: Could not write to requirements.txt");
+        file.write(&output.stdout)
+            .expect("\n!Error: Could not write to requirements.txt");
     }
 
     /*
@@ -137,7 +146,8 @@ if __name__ == \"__main__\":
     // ----------------------------------------------------------------------------------------
     fn check_module_format(m: &str) -> (bool, String) {
         lazy_static! {
-            static ref RE: Regex = Regex::new(r"\b(?:[a-z]{1,})(?:@\d|[^@.])(?:(?:.\d+){0,2}|\w)").unwrap();
+            static ref RE: Regex =
+                Regex::new(r"\b(?:[a-z]{1,})(?:@\d|[^@.])(?:(?:.\d+){0,2}|\w)").unwrap();
         }
 
         let mut has_version_num: bool = true;
@@ -166,12 +176,15 @@ if __name__ == \"__main__\":
     fn install_yolk3k() {
         println!("\n...Installing yolk3k");
 
-        let status = Command::new("pip").args(&["install", "yolk3k"]).status().expect("\nError: Failed to Execute pip command.\n");
-            if status.success(){
-                println!("Successful\n");
-            } else {
-                println!("Error: could not install yolk3k.");
-            }
+        let status = Command::new("pip")
+            .args(&["install", "yolk3k"])
+            .status()
+            .expect("\nError: Failed to Execute pip command.\n");
+        if status.success() {
+            println!("Successful\n");
+        } else {
+            println!("Error: could not install yolk3k.");
+        }
     }
     // ----------------------------------------------------------------------------------------
 }
@@ -183,11 +196,11 @@ if __name__ == \"__main__\":
 pub mod cli {
     // Crate Directives
     // ----------------------------------------------------------------------------------------
+    use dialoguer::{theme::ColorfulTheme, Select};
+    use regex::Regex;
     use std::io;
     use std::io::*;
     use std::process::Command;
-    use dialoguer::{theme::ColorfulTheme, Select};
-    use regex::Regex;
     // ----------------------------------------------------------------------------------------
 
     // ----------------------------------------------------------------------------------------
@@ -195,7 +208,10 @@ pub mod cli {
     // ----------------------------------------------------------------------------------------
     pub fn check_pip_version() {
         println!("\n...Checking pip version\n");
-        let status = Command::new("pip").arg("-V").status().expect("\nError: Failed to Execute pip command.\n");
+        let status = Command::new("pip")
+            .arg("-V")
+            .status()
+            .expect("\nError: Failed to Execute pip command.\n");
 
         if status.success() {
             // println!("\n{:?}\n", status);
@@ -204,21 +220,20 @@ pub mod cli {
             let options = &[
                 "Continue as default",
                 "Update to latest pip version",
-                "Install custom pip version"
+                "Install custom pip version",
             ];
 
             let selection = Select::with_theme(&ColorfulTheme::default())
-                            .with_prompt("Pick an Option:")
-                            .default(0)
-                            .items(&options[..])
-                            .interact()
-                            .unwrap();
+                .with_prompt("Pick an Option:")
+                .default(0)
+                .items(&options[..])
+                .interact()
+                .unwrap();
 
             match selection {
                 1 => update_pip_version(),
                 2 => install_custom_pip_version(),
-                _ => println!("\n. . .Using default pip version")
-
+                _ => println!("\n. . .Using default pip version"),
             }
 
             // println!("{}", selection);
@@ -231,22 +246,19 @@ pub mod cli {
     pub fn install_git(project_path: &str) {
         println!("\nInitialize with git?");
 
-        let options = &[
-            "Yes",
-            "No"
-        ];
+        let options = &["Yes", "No"];
 
         let selection = Select::with_theme(&ColorfulTheme::default())
-                        .with_prompt("Pick an Option:")
-                        .default(0)
-                        .items(&options[..])
-                        .interact()
-                        .unwrap();
+            .with_prompt("Pick an Option:")
+            .default(0)
+            .items(&options[..])
+            .interact()
+            .unwrap();
 
         let mut choice: bool = false;
         match selection {
             0 => choice = true,
-            _ => ()
+            _ => (),
         }
 
         if choice {
@@ -271,11 +283,14 @@ pub mod cli {
         println!("\n. . .Updating pip version");
 
         Command::new("python")
-                .args(&["-m","pip","install","--upgrade","pip"])
-                .output()
-                .expect("Could not update pip.");
+            .args(&["-m", "pip", "install", "--upgrade", "pip"])
+            .output()
+            .expect("Could not update pip.");
 
-        Command::new("pip").arg("-V").status().expect("\nError: Failed to Execute pip command.\n");
+        Command::new("pip")
+            .arg("-V")
+            .status()
+            .expect("\nError: Failed to Execute pip command.\n");
         println!("\n. . .Latest pip version installed");
     }
 
@@ -287,7 +302,9 @@ pub mod cli {
         while !valid {
             print!("Enter preferred version number: ");
             let _ = io::stdout().flush();
-            io::stdin().read_line(&mut version).expect("\nError: unable to read input.");
+            io::stdin()
+                .read_line(&mut version)
+                .expect("\nError: unable to read input.");
             if RE.is_match(&version) {
                 valid = true;
             }
@@ -296,20 +313,34 @@ pub mod cli {
         println!("\n. . .Installing pip version {}", version);
 
         Command::new("pip")
-                .args(&["uninstall", "pip"])
-                .output()
-                .expect("\nCould not uninstall pip");
+            .args(&["uninstall", "pip"])
+            .output()
+            .expect("\nCould not uninstall pip");
 
         Command::new("python")
-                .args(&["-m", "pip", "install", "--upgrade", &format!("pip=={}", version)])
-                .output()
-                .expect(&format!("\nCould not install pip version {}", version));
+            .args(&[
+                "-m",
+                "pip",
+                "install",
+                "--upgrade",
+                &format!("pip=={}", version),
+            ])
+            .output()
+            .expect(&format!("\nCould not install pip version {}", version));
 
-        Command::new("pip").arg("-V").status().expect("\nError: Failed to Execute pip command.\n");
+        Command::new("pip")
+            .arg("-V")
+            .status()
+            .expect("\nError: Failed to Execute pip command.\n");
     }
 
     fn check_git_installed() -> bool {
-        Command::new("git").arg("--version").output().expect("").status.success()
+        Command::new("git")
+            .arg("--version")
+            .output()
+            .expect("")
+            .status
+            .success()
     }
 
     fn git_init(path: &str) {

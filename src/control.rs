@@ -5,12 +5,15 @@ extern crate json;
 
 pub mod tabling {
 
+    use prettytable::{Cell, Row, Table};
     use std::path::Path;
     use std::{fs, io::*};
-    use prettytable::{Table, Row, Cell};
 
-
-    pub fn add_template(template: json::JsonValue, template_path: &str, template_name: &str) -> String {
+    pub fn add_template(
+        template: json::JsonValue,
+        template_path: &str,
+        template_name: &str,
+    ) -> String {
         match dirs::home_dir() {
             Some(path) => {
                 let mut sep_string = "\\";
@@ -18,24 +21,39 @@ pub mod tabling {
                     sep_string = "/";
                 }
 
-                if !Path::new(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string)).exists() {
+                if !Path::new(&format!(
+                    "{}{}.viper{}.record.json",
+                    path.to_str().unwrap(),
+                    sep_string,
+                    sep_string
+                ))
+                .exists()
+                {
                     println!("\n\nCreating .record.json file... ");
                     // println!("{}\\viper", path.to_str().unwrap());
                     // println!("{}\\.viper\\record.json", path.to_str().unwrap());
-                    fs::create_dir_all(&format!("{}\\.viper", path.to_str().unwrap())).expect("!Error: Could not create .viper directory");
-                    fs::File::create(&format!("{}\\.viper\\.record.json", path.to_str().unwrap())).expect("\n!Error: Could not create .record.json file.");
+                    fs::create_dir_all(&format!("{}\\.viper", path.to_str().unwrap()))
+                        .expect("!Error: Could not create .viper directory");
+                    fs::File::create(&format!("{}\\.viper\\.record.json", path.to_str().unwrap()))
+                        .expect("\n!Error: Could not create .record.json file.");
                 }
 
                 // Open & Read File
-                let contents = fs::read_to_string(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string)).expect("\n!Error: Could not read from file.");
-                
+                let contents = fs::read_to_string(&format!(
+                    "{}{}.viper{}.record.json",
+                    path.to_str().unwrap(),
+                    sep_string,
+                    sep_string
+                ))
+                .expect("\n!Error: Could not read from file.");
+
                 let mut record: json::JsonValue;
 
                 // Parse Json
                 if json::parse(&contents).is_ok() {
                     record = json::parse(&contents).unwrap();
                 } else {
-                    record = json::object!{
+                    record = json::object! {
                         "templates": [],
                         "projects": []
                     };
@@ -45,10 +63,24 @@ pub mod tabling {
                 record["templates"].push(template);
 
                 // Save new Json to File
-                fs::write(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string), record.dump().as_bytes()).expect("\n!Error: Could not write to file.");
+                fs::write(
+                    &format!(
+                        "{}{}.viper{}.record.json",
+                        path.to_str().unwrap(),
+                        sep_string,
+                        sep_string
+                    ),
+                    record.dump().as_bytes(),
+                )
+                .expect("\n!Error: Could not write to file.");
 
-                return format!("\nSaved to {}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string);
-            },
+                return format!(
+                    "\nSaved to {}{}.viper{}.record.json",
+                    path.to_str().unwrap(),
+                    sep_string,
+                    sep_string
+                );
+            }
             _ => return String::from("\n!Error: Could not find home folder"),
         }
     }
@@ -61,30 +93,45 @@ pub mod tabling {
                     sep_string = "/";
                 }
 
-                if !Path::new(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string)).exists() {
+                if !Path::new(&format!(
+                    "{}{}.viper{}.record.json",
+                    path.to_str().unwrap(),
+                    sep_string,
+                    sep_string
+                ))
+                .exists()
+                {
                     println!("\n\nCreating .record.json file... ");
                     // println!("{}\\viper", path.to_str().unwrap());
                     // println!("{}\\.viper\\record.json", path.to_str().unwrap());
-                    fs::create_dir_all(&format!("{}\\.viper", path.to_str().unwrap())).expect("!Error: Could not create .viper directory");
-                    fs::File::create(&format!("{}\\.viper\\.record.json", path.to_str().unwrap())).expect("\n!Error: Could not create .record.json file.");
+                    fs::create_dir_all(&format!("{}\\.viper", path.to_str().unwrap()))
+                        .expect("!Error: Could not create .viper directory");
+                    fs::File::create(&format!("{}\\.viper\\.record.json", path.to_str().unwrap()))
+                        .expect("\n!Error: Could not create .record.json file.");
                 }
 
                 // Open & Read File
-                let mut contents = fs::read_to_string(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string)).expect("\n!Error: Could not read from file.");
-                
+                let mut contents = fs::read_to_string(&format!(
+                    "{}{}.viper{}.record.json",
+                    path.to_str().unwrap(),
+                    sep_string,
+                    sep_string
+                ))
+                .expect("\n!Error: Could not read from file.");
+
                 let mut record: json::JsonValue;
 
                 // Parse Json
                 if json::parse(&contents).is_ok() {
                     record = json::parse(&contents).unwrap();
                 } else {
-                    record = json::object!{
+                    record = json::object! {
                         "templates": [],
                         "projects": []
                     };
                 }
 
-                let project = json::object!{
+                let project = json::object! {
                     "path": json::JsonValue::String(String::from(project_path)),
                     "name": json::JsonValue::String(String::from(project_name)),
                     "template": json::JsonValue::String(String::from(template_name))
@@ -93,13 +140,29 @@ pub mod tabling {
                 // print!("{:#}", project.pretty(4));
 
                 // Add project to json
-                record["projects"].push(project).expect("Could not save project.");
+                record["projects"]
+                    .push(project)
+                    .expect("Could not save project.");
 
                 // Save new Json to File
-                fs::write(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string), record.dump().as_bytes()).expect("\n!Error: Could not write to file.");
+                fs::write(
+                    &format!(
+                        "{}{}.viper{}.record.json",
+                        path.to_str().unwrap(),
+                        sep_string,
+                        sep_string
+                    ),
+                    record.dump().as_bytes(),
+                )
+                .expect("\n!Error: Could not write to file.");
 
-                return format!("\nSaved to {}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string);
-            },
+                return format!(
+                    "\nSaved to {}{}.viper{}.record.json",
+                    path.to_str().unwrap(),
+                    sep_string,
+                    sep_string
+                );
+            }
             _ => return String::from("\n!Error: Could not find home folder"),
         }
     }
@@ -123,33 +186,42 @@ pub mod tabling {
                 }
 
                 // Open & Read File
-                let contents = fs::read_to_string(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string)).expect("\n!Error: Could not read from file.");
-                
+                let contents = fs::read_to_string(&format!(
+                    "{}{}.viper{}.record.json",
+                    path.to_str().unwrap(),
+                    sep_string,
+                    sep_string
+                ))
+                .expect("\n!Error: Could not read from file.");
+
                 let record: json::JsonValue;
 
                 // Parse Json
                 if json::parse(&contents).is_ok() {
                     record = json::parse(&contents).unwrap();
-                    
+
                     if record["templates"].len() > 0 {
                         for t in 0..record["templates"].len() {
-                            if !verbose{
+                            if !verbose {
                                 // println!("{}:    {}", t, record["templates"][t]["name"]);
                                 table.add_row(row![t, record["templates"][t]["name"]]);
                             } else {
                                 // print!("{:#}\n\n", record["templates"][t].pretty(4));
-                                table.add_row(row![t, record["templates"][t]["name"], record["templates"][t].pretty(4)]);
+                                table.add_row(row![
+                                    t,
+                                    record["templates"][t]["name"],
+                                    record["templates"][t].pretty(4)
+                                ]);
                             }
                         }
                         table.printstd();
                     } else {
                         println!("(No Templates saved.)");
                     }
-
                 } else {
                     println!("\nNo templates saved.")
                 }
-            },
+            }
             _ => println!("\n!Error: Could not find home folder"),
         }
     }
@@ -169,34 +241,48 @@ pub mod tabling {
                 table.add_row(row!["#", "Name", "Directory", "Template"]);
 
                 // Open & Read File
-                let contents = fs::read_to_string(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string)).expect("\n!Error: Could not read from file.");
-                
+                let contents = fs::read_to_string(&format!(
+                    "{}{}.viper{}.record.json",
+                    path.to_str().unwrap(),
+                    sep_string,
+                    sep_string
+                ))
+                .expect("\n!Error: Could not read from file.");
+
                 let record: json::JsonValue;
 
                 // Parse Json
                 if json::parse(&contents).is_ok() {
                     record = json::parse(&contents).unwrap();
                     let path = std::env::current_dir().unwrap();
-                    
+
                     if record["projects"].len() > 0 {
                         for t in 0..record["projects"].len() {
-                            if !verbose{
+                            if !verbose {
                                 // println!("{}:    {}", t, record["templates"][t]["name"]);
-                                table.add_row(row![t, record["projects"][t]["name"], path.to_str().unwrap()]);
+                                table.add_row(row![
+                                    t,
+                                    record["projects"][t]["name"],
+                                    path.to_str().unwrap()
+                                ]);
                             } else {
                                 // print!("{:#}\n\n", record["templates"][t].pretty(4));
-                                table.add_row(row![t, record["projects"][t]["name"], path.to_str().unwrap(), record["projects"][t]["template"]]);
+                                table.add_row(row![
+                                    t,
+                                    record["projects"][t]["name"],
+                                    path.to_str().unwrap(),
+                                    record["projects"][t]["template"]
+                                ]);
                             }
                         }
                         table.printstd();
                     } else {
                         println!("(No Projects saved.)");
                     }
-
                 } else {
                     println!("\n(No Projects saved.)")
                 }
-            },
+            }
             _ => println!("\n!Error: Could not find home folder"),
         }
     }
@@ -210,23 +296,37 @@ pub mod tabling {
                 }
 
                 // Open & Read File
-                let contents = fs::read_to_string(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string)).expect("\n!Error: Could not read from .record.json");
-                
+                let contents = fs::read_to_string(&format!(
+                    "{}{}.viper{}.record.json",
+                    path.to_str().unwrap(),
+                    sep_string,
+                    sep_string
+                ))
+                .expect("\n!Error: Could not read from .record.json");
+
                 let mut record: json::JsonValue;
                 if json::parse(&contents).is_ok() {
                     record = json::parse(&contents).unwrap();
                     let t = record["templates"].array_remove(index as usize);
                     print!("\nRemoved template {}...\n{:#}\n", index, t);
-                    fs::write(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string), record.dump()).expect("\n!Error: Could not write to .record.json");
+                    fs::write(
+                        &format!(
+                            "{}{}.viper{}.record.json",
+                            path.to_str().unwrap(),
+                            sep_string,
+                            sep_string
+                        ),
+                        record.dump(),
+                    )
+                    .expect("\n!Error: Could not write to .record.json");
                 }
-
-            },
-            _ => println!("!Error: Could not find home folder.")
+            }
+            _ => println!("!Error: Could not find home folder."),
         }
     }
 
     pub fn remove_project(index: i32) {
-        // Open and read File 
+        // Open and read File
         match dirs::home_dir() {
             Some(path) => {
                 let mut sep_string = "\\";
@@ -235,32 +335,51 @@ pub mod tabling {
                 }
 
                 // Open & Read File
-                let contents = fs::read_to_string(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string)).expect("\n!Error: Could not read from .record.json");
-                
+                let contents = fs::read_to_string(&format!(
+                    "{}{}.viper{}.record.json",
+                    path.to_str().unwrap(),
+                    sep_string,
+                    sep_string
+                ))
+                .expect("\n!Error: Could not read from .record.json");
+
                 let mut record: json::JsonValue;
                 if json::parse(&contents).is_ok() {
                     record = json::parse(&contents).unwrap();
                     let t = record["projects"].array_remove(index as usize);
                     print!("\nRemoved project {}...\n{:#}\n", index, t);
-                    fs::write(&format!("{}{}.viper{}.record.json", path.to_str().unwrap(), sep_string, sep_string), record.dump()).expect("\n!Error: Could not write to .record.json");
+                    fs::write(
+                        &format!(
+                            "{}{}.viper{}.record.json",
+                            path.to_str().unwrap(),
+                            sep_string,
+                            sep_string
+                        ),
+                        record.dump(),
+                    )
+                    .expect("\n!Error: Could not write to .record.json");
                 }
 
                 let mut choice = String::from("");
 
-                while choice.trim() != "y" && choice.trim() != "Y" && choice.trim() != "n" && choice.trim() != "N" { 
+                while choice.trim() != "y"
+                    && choice.trim() != "Y"
+                    && choice.trim() != "n"
+                    && choice.trim() != "N"
+                {
                     print!("Would you like to delete the project folder? (y/N) : ");
                     let _ = std::io::stdout().flush();
-                    std::io::stdin().read_line(&mut choice).expect("\nError: unable to read input.");
+                    std::io::stdin()
+                        .read_line(&mut choice)
+                        .expect("\nError: unable to read input.");
                     println!("{}", choice);
                 }
-
-            },
-            _ => println!("!Error: Could not find home folder.")
+            }
+            _ => println!("!Error: Could not find home folder."),
         }
     }
 
     pub fn update(path: &Path) {
         //
     }
-
 }
